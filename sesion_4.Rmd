@@ -1,0 +1,1395 @@
+---
+title: "Capacitación en R y herramientas de productividad"
+subtitle: "Sesión 4"  
+author: 
+date: '`r Sys.Date()`'
+output:
+  xaringan::moon_reader:
+    seal: false
+    #lib_dir: libs
+    css: xaringan-themer.css
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: False
+---
+
+class: center, middle
+
+.linea-superior[]
+.linea-inferior[]
+
+
+<img src="imagenes/logo_portada2.png" width="200" />
+
+
+## Capacitación en R y herramientas de productividad
+
+## Proyecto Estratégico Servicios Compartidos para la Producción Estadística
+
+## Procesamiento de bases de datos (3)
+
+### Noviembre 2020
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = TRUE)
+knitr::opts_chunk$set(message = FALSE) 
+```
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+#style_duo_accent(
+ # primary_color = "#1381B0",
+  #secondary_color = "#FF961C",
+  #inverse_header_color = "#FFFFFF"
+#)
+```
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Sesión 3: Procesamiento de BBDD (3)
+
+--
+<br/>
+
+- .medium-par[Unión de bases de datos (joins, binds)📌]
+<br/>
+<br/>
+
+--
+
+- .medium-par[Manejo de variables de tiempo (fechas) 📆]
+<br/>
+<br/>
+
+
+---
+
+background-image: url(https://media.giphy.com/media/d6igLr7klmdCU/giphy.gif)
+background-size: cover
+class: center, up, inverse
+
+<br/>
+# Unión de *data frames*
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Unión de *data frames*
+
+--
+
+<br/>
+<br/>
+<br/>
+
+.center[.big-par[¿Para qué tareas creen que es .big-par-red[útil] conocer sobre uniones de bases de datos?]]
+
+--
+
+.center[.big-par[🤔]]
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Unión de *data frames*
+
+--
+
+<br/>
+<br/>
+<br/>
+.center[.big-par[¿Alguna vez han tenido que unir bases de datos?]]
+
+--
+
+.center[.medium-par[¿O en su .pur[vida cotidiana], han notado que en diversas situaciones ocurren uniones de bases de datos?]]
+
+--
+
+.center[.big-par[🤔]]
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Unión de *data frames*
+
+--
+<br/>
+<br/>
+La mayoría de las funciones para .pur[análisis] y .pur[transformación] de datos que utilizaremos en este curso están diseñadas para operar sobre una tabla o *data frame*.
+
+--
+
+`R` incluye en sus paquetes base una función multipropósito para unir datos llamada `merge()`.
+
+--
+
+.pur[Vamos a ignorar] `merge()` en esta ocasión y enfocarnos en algunas funciones de `dplyr` que .pur[tienen el mismo objetivo].
+
+--
+
+¿Por qué?
+
+--
+
+- Los `joins` de `dplyr` ofrecen más control sobre el proceso, dado que existen distintas funciones para generar uniones *ad hoc* a nuestros requerimientos.
+
+--
+
+- Los `joins` mantienen el orden de las filas (no así necesariamente `merge()`)
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Unión de *data frames*
+
+--
+
+
+.medium-par[No queremos que nos vaya a pasar...]
+
+
+.pull-left[
+![](https://media.giphy.com/media/cFkiFMDg3iFoI/giphy.gif)
+
+]
+
+--
+
+.pull-right[
+
+.medium-par[O esto...]
+
+![](https://media0.giphy.com/media/P4TqKx6NHyLnO/giphy.gif?cid=3640f6095c91abd67a467174592b5512)
+]
+
+--
+
+Los `joins` son un set de funciones que son parte de `dplyr`.
+
+--
+
+Y al igual que las funciones de `dplyr` que aprendimos previamente, comparten su .medium-par-red[gramática] y .medium-par-red[simpleza]. 
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Familia Join
+
+--
+
+Como .pur[intuición básica], los joins .medium-par-red[combinan] dos data frames agregando columnas de uno al otro.
+
+--
+
+Si bien existen **6 tipos de joins básicos**, nos concentraremos acá los **2 que más se utilizan**.
+
+--
+
+- `left_join()`
+- `inner_join()`
+
+Que son 3 de los 4 joins denominados como .pur[*mutating*] joins.
+
+--
+
+Y también veremos 2 funciones muy sencillas de .pur[ensamblaje] de *data frames* con `dplyr`.
+
+- `bind_rows()` (su simil en lenguaje R base es `rbind()`)
+- `bind_cols()` (su simil en lenguaje R base es `cbind()`)
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Familia Join
+
+--
+
+Entonces, .pur[a modo de contexto], veamos los tipos de `joins` que existen.
+
+--
+
+.center[
+<img src="imagenes/join_dplyr.PNG" width="400" />
+]
+
+--
+
+Como pueden ver, **son bastantes** (y no están todos ahí 😱🤯 ). Esto es porque son .pur[muy específicos].
+
+--
+
+Poder usar cada uno de forma precisa es todo un arte 🎨🖌.
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Tipos de uniones (no solo joins) 
+
+--
+
+Hay .pur[diferentes tipos de uniones] de *data frames*:
+
+.pull-left[
+
+.pur[*Mutating joins:*] para agregar columnas.
+
+- `left_join()`
+- `right_join()`
+- `inner_join()`
+- `full_join()`
+
+<br/>
+.pur[*Joins de filtrado:*] para extraer o filtrar filas.
+
+- `semi_join()`
+- `anti_join()`
+
+.pur[*funciones de ensamblaje:*] para "pegar" *data frames*
+
+- `bind_rows()`
+- `bind_cols()`
+]
+
+.pull-right[
+<img src="imagenes/filter_mut.PNG" width="200" />
+]
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# dplyr::left_join()
+
+--
+
+Es la función de unión más básica y .medium-par-red[más utilizada] entre los `joins`.
+
+--
+
+¿Qué hace `left_join()`?
+
+--
+
+(En adelante, llamaremos al primer *data frame* .medium-par[X] y al segundo .medium-par[Y])
+
+--
+
+- Retorna **todas las filas de X** y .pur[todas las columnas de X e Y].
+
+--
+
+- Las filas de X que no tienen *match* en Y, tendrán `NAs` en las nuevas variables.
+
+--
+
+- Las filas de Y que no tienen *match* en X, **son ignoradas por completo**.
+
+--
+
+.center[
+<img src="imagenes/left_join.PNG" width="650" />
+]
+
+--
+
+.medium-par[`right_join()` hace exactamente lo mismo pero al revés.] 
+
+--
+
+.medium-par[Veamos un ejemplo...]
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# dplyr::left_join()
+
+.pull-left[
+```{r, warning=F}
+library(dplyr)
+band_members
+```
+]
+
+--
+
+.pull-right[
+```{r, warning=F}
+band_instruments
+```
+]
+
+--
+
+```{r}
+left_join(band_members, band_instruments, by = "name")
+```
+
+--
+
+Se puede hacer lo mismo con *pipes*.
+
+```{r, eval = FALSE}
+band_members %>% left_join(band_instruments, by = "name")
+```
+
+--
+
+.pur[¿Cuál es la llave o *key* que conecta los dos *data frames*?]
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+
+# Sobre las llaves (*keys*)
+
+--
+
+Aunque en problemas de pocas variables no es necesario indicarla (podríamos no haber escrito `by = "name"`).
+
+--
+
+La llave en general es muy importante, y sirve para .pur[individualizar sin ambiguedades] a cada observación.
+
+--
+
+Es por eso que puede estar compuesta por una, dos, o más variables si es necesario.
+
+--
+
+.pull-left[
+<img src="imagenes/llave_unica.PNG" width="400" />
+]
+
+--
+
+.pull-right[
+<img src="imagenes/llave_doble.PNG" width="400" />
+]
+
+--
+
+.center[**base X:** *primary key* / **base Y:** *foreign key*.]
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# dplyr::inner_join()
+
+--
+
+.medium-par[Retorna **SOLO las filas de X donde hay *match* con Y** y todas las columnas de X e Y.]
+
+--
+
+Las filas de X que no tienen *match* en Y, .pur[son ignoradas por completo].
+
+--
+
+Las filas de Y que no tienen *match* en X, .pur[son ignoradas por completo].
+
+--
+
+.medium-par[Esta función generalmente reduce filas de un *data frame*.]
+
+--
+
+.center[
+<img src="imagenes/inner_join.PNG" width="650" />
+]
+
+--
+
+.medium-par[Veamos un ejemplo...]
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# dplyr::inner_join()
+
+--
+
+Tomemos este código y creemos `songs` y `albums`.
+
+```{r,}
+
+songs <- tibble(song = c("Come Together", "Dream On", "Hello,Goodbye", "It's Not Unusual"),
+                album  = c("Abbey Road", "Aerosmith", "Magical Mystery Tour", "Along Came Jones"),
+                first = c("John", "Steven", "Paul", "Tom"),
+                last = c("Lennon", "Tyler", "McCartney", "Jones"))
+
+albums <- tibble( album = c("A Hard Day's Night", "Magical Mystery Tour", "Beggar's Banquet",
+                            "Abbey Road", "Led Zeppelin IV", "The Dark Side of the Moon",
+                            "Aerosmith", "Rumours", "Hotel California"),
+                  band = c("The Beatles", "The Beatles", "The Rolling Stones",
+                           "The Beatles", "Led Zeppelin", "Pink Floyd", "Aerosmith",
+                           "Fleetwood Mac", "Eagles"),
+                  year = c(1964,1967,1968,1969,1971,1973,1973,1977,1982))
+```
+
+--
+
+.medium-par[¿Cuál es la posible llave entre estos dos *data frames*? 🤨]
+
+--
+
+¿Qué pasará si hacemos un `inner_join()` sin especificar una llave?
+
+--
+
+Vamos a ver...
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# dplyr::inner_join()
+
+
+```{r, message= TRUE}
+songs %>% inner_join(albums)
+```
+
+--
+
+En este caso **no hay ambigüedad**, por lo que R entiende cuál es la llave.
+
+--
+
+Puedo restringir la cantidad de columnas que quiero unir de cualquiera de los dos *data frames*.
+
+--
+
+```{r}
+songs[c(1,2)] %>% inner_join(albums[-3], by = "album")
+```
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# dplyr::inner_join()
+
+Como pueden notar, la dificultad de los `joins` no está en el código.
+
+--
+
+.medium-par[Se encuentra en decidir cómo, cuándo y cuál usar.]
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Mini-ejercicio 1 
+
+## Ahora ustedes...
+
+--
+
+Creemos estas dos *tibbles* de `artists` y `bands`.
+
+```{r}
+artists <- tibble(first = c("Jimmy", "George", "Mick", "Tom", "Davy", 
+                            "John", "Paul", "Jimmy", "Joe", "Elvis", "Keith",
+                            "Paul", "Ringo", "Joe", "Brian", "Nancy"),
+                  last = c("Buffett", "Harrison", "Jagger", "Jones", "Jones",
+                            "Lennon", "McCartney", "Page", "Perry", "Presley", 
+                           "Richards", "Simon", "Starr", "Walsh", "Wilson", "Wilson"),
+                  instrument = c("Guitar", "Guitar", "Vocals", "Vocals", "Vocals", 
+                                 "Guitar", "Bass", "Guitar", "Guitar", "Vocals",
+                                  "Guitar", "Guitar", "Drums", "Guitar", "Vocals", "Vocals"))
+
+bands <- tibble(first = c("John", "John Paul", "Jimmy", "Robert", "George", "John", 
+                          "Paul", "Ringo", "Jimmy", "Mick", "Keith",  "Charlie", "Ronnie"),
+                last = c("Bonham", "Jones", "Page", "Plant", "Harrison", "Lennon", "McCartney",
+                         "Starr", "Buffett", "Jagger", "Richards", "Watts", "Wood"), 
+                band = c("Led Zeppelin", "Led Zeppelin", "Led Zeppelin", "Led Zeppelin", 
+                         "The Beatles", "The Beatles", "The Beatles", "The Beatles", 
+                         "The Coral Reefers", "The Rolling Stones", "The Rolling Stones", 
+                         "The Rolling Stones", "The Rolling Stones"))
+```
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Mini-ejercicio 1 
+
+--
+
+Utilizando las bases `artists` y `bands`.
+
+--
+
+1- Generar una base de datos que contenga *first* (nombre), *last* (apellido) y la banda (*band*), para **todos** los artistas presentes en la base `artists`.
+
+--
+
+.medium-par[¿Qué pueden observar sobre la base resultante?]
+
+--
+
+2- Generar una base de datos, a partir *artist* y *bands*, que contenga las variables *first* (nombre), *last* (apellido), la banda (*band*) e instrumento (*instrument*), que incluya solo a los artistas que tienen información en las 4 variables.
+
+--
+
+.medium-par[¿Cuántas observaciones tiene la base creada?]
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Mini-ejercicio 1: solución
+
+--
+
+**Ejercicio 1:**
+
+```{r}
+artists %>% left_join(bands, by = c("first", "last")) %>% head()
+```
+
+--
+
+**Ejercicio 2:**
+
+```{r}
+artists %>% inner_join(bands, by = c("first", "last")) %>% head(5)
+```
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Funciones de ensamblaje 
+
+--
+
+hasta ahora no se ha mencionado la forma más sencilla de unir 2 *data frames*.
+
+--
+
+Si tenemos dos *data frames* que tienen la misma estructura de columnas o de filas...
+
+--
+
+**Por ejemplo:** submuestras de una encuesta, distintos años de un RRAA, etc.
+
+--
+
+Podemos simplemente .medium-par-red[ensamblarlas.]
+
+--
+
+`R` base trae por defecto `rbind()` para pegar filas y `cbind()` para columnas.
+
+--
+
+Recomendamos usar `bind_rows()` y `bind_cols()` de `dplyr()`.
+
+--
+
+**Importante:** `cbind`, pero también `bind_cols()` no usan una llave, **suponen que las filas están en el mismo orden**.
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# bind_rows() y bind_cols()
+
+--
+
+¿por qué preferir `bind_rows()` y `bind_cols()` en vez de `rbind()` y `cbind()`?
+
+--
+
+- Son más rápidas
+
+--
+
+- Siempre retornan una `tibble`, que es una versión mejorada de un *data frame*.
+
+--
+
+- Tienen una sintaxis más flexible.
+
+--
+
+- **Y lo más importante:** el argumento ".id" de `bind_rows()`, permite identificar el origen de cada fila. Esto hace más fácil su tratamiento.
+
+--
+
+Generemos un ejemplo de juguete solo para ejemplificar el uso de `bind_rows`.
+
+--
+
+```{r}
+artists_2 = artists #duplicamos este data frame solo con un fin pedagógico
+
+ensamble <- bind_rows(original = artists, duplic = artists_2, .id= "base_datos")
+
+```
+
+---
+
+background-image: url(https://media2.giphy.com/media/xsF1FSDbjguis/200w.webp?cid=3640f6095c9321d95239485951223fbe)
+background-size: cover
+class: center, bottom, inverse
+
+# Variables de tiempo en R
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Variables de tiempo en R
+
+--
+
+Las .medium-par[fechas y horas ⏳], como información, presentan una **gran versatilidad **para el análisis de diversos fenómenos.
+
+--
+
+En este módulo **solo veremos fechas** 📆, pero para horas, minutos y segundos la lógica es la misma.
+
+--
+
+Sin embargo, si bien es posible trabajar variables de tiempo sin herramientas dedicadas, sería **extremadamente engorroso**, y se requerirían .pur[herramientas medianamente sofisticadas] para transformar estas variables en objetos con los que podamos operar.
+
+--
+
+Para eso `R` ofrece herramientas dedicadas especialmente a solucionarnos la vida. Podrían separarse en 2 tipos:
+
+--
+
+- Herramientas para .pur[organizar fechas en un formato reconocible].
+
+- Herramientas que .pur[traduzcan] estas fechas de formato estandarizado a .medium-par-red[números].
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Variables de tiempo en R
+
+
+Y con números se pueden hacer muchas cosas: **operaciones matemáticas**, **gráficos**, etc. Mientras `R` por detrás trabaja con números, nosotros seguimos viendo sencillas y amigables fechas 🙃.
+
+--
+
+```{r}
+# Pueden reemplazar esta fecha por sus cumpleaños
+mi_cumple <- ("1985-06-12")
+str(mi_cumple)
+```
+
+--
+
+```{r}
+mi_cumple <- as.Date(mi_cumple)
+str(mi_cumple)
+```
+
+--
+
+```{r}
+as.numeric(mi_cumple)
+```
+
+--
+
+La función `as.Date()` recibió una cadena de caracteres y la transformó en un objeto fecha (`date`), y esa fecha aloja un número. .medium-par-red[¿Qué representa ese número?]
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Variables de tiempo en R
+
+```{r}
+as.numeric(as.Date("1970-01-01"))
+```
+
+--
+
+Es la distancia desde un momento **escogido de manera arbitraria**: el .medium-par-red[1 de enero de 1970].
+
+--
+
+`as.Date()` es una función sencilla de usar, **pero no es muy robusta para el trabajo con fechas**.
+
+--
+
+```{r}
+mi_cumple <- as.Date("12-06-1985"); str(mi_cumple) 
+```
+
+--
+
+.pur[No soluciona el problema del ordenamiento]. Requiere asistentes para hacerlo. 
+
+--
+
+```{r}
+library(anytime)
+mi_cumple <- as.Date(anydate("12-06-1985")); str(mi_cumple) 
+```
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Variables de tiempo en R
+
+--
+
+Aún así, **no hay que descartarla**, es muy útil cuando el formato es la norma ISO 8661. Esta indica un formato .medium-par-red[YYYY-MM-DD] y una cantidad de dígitos por parámetro (4-2-2).
+
+--
+
+Dentro del universo de `tidyverse` existe una **librería especializada para el tratamiento de fechas y horas**.
+
+--
+
+Se llama `lubridate` y su objetivo es hacer más intuitiva la manipulación y análisis de este tipo de variables.
+
+--
+
+Veamos algunos operadores básicos muy útiles.
+
+--
+
+`R` base tiene funciones para extraer la fecha y hora en el momento de la consulta.
+
+```{r}
+Sys.Date() # La fecha de hoy
+Sys.time() # el momento exacto, con fecha, horas, minutos y segundos
+```
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Manejo de fechas con `lubruidate`
+
+--
+
+`lubridate` tiene funciones que hacen lo mismo, pero con un lenguaje más intuitivo.
+
+--
+
+```{r}
+library(lubridate) # cargamos lubridate
+today() 
+now()
+```
+
+--
+
+**Hay 2 formas principales para crear una fecha.**
+
+--
+
+- Desde una cadena de caracteres o numeros. 
+
+--
+
+- Desde componentes *date-time* individuales.
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Manejo de fechas con `lubruidate`
+
+--
+
+.pull-left[
+
+**1. Desde cadenas de caracteres**
+
+
+- La más habitual es a partir de cadenas de caracteres.
+
+- Existen helpers en `lubridate` que automáticamente ordenan el formato de una variable fecha.
+
+- Solo hay que ordenarlos de acuerdo al input.
+
+- Se aceptan diferentes tipos de separadores.
+
+]
+
+.pull-right[
+```{r}
+ymd("1985-06-12")
+# No asimila bien el mes en español
+mdy("Jun 12, 1985")
+dmy("12/jun/1985")
+```
+
+]
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Manejo de fechas con `lubridate`
+
+--
+
+También se pueden crear fechas a partir de variables numéricas. .medium-par-red[Siempre y cuando respeten el orden y cantidad de dígitos].
+
+--
+
+```{r}
+ymd(20190322)
+dmy(22032019)
+```
+
+--
+
+**2. Creación desde componentes *date-time* individuales**
+
+--
+
+A veces las fechas nos llegan en un *data frame* separadas en día, mes, año.
+
+---
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Manejo de fechas con `lubridate`
+
+--
+
+Debemos unirlas para operarlas como objetos *date*. **Usaremos la base de nacimientos de EEVV 2017**.
+
+--
+
+Para crear un objeto `date` que llamaremos `fecha_nac` usamos la función `make_date()` de `lubridate`.
+
+
+```{r}
+# cargamos la base
+library(readxl)
+library(lubridate)
+
+nac2017 <- read_excel("data/nac_2017.xlsx")
+
+# seleccionamos día, mes, año de nacimiento y creaoms una fecha
+nac2017 %>% 
+  select(dia_nac, mes_nac, ano_nac) %>% 
+  mutate(fecha_nac = make_date(ano_nac, mes_nac, dia_nac)) %>% 
+  head(5)
+```
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Mini-ejercicio 2
+
+--
+<br/>
+<br/>
+Utilizando la base de datos "nac2017" que acabamos de cargar en nuestro entorno de trabajo.
+
+--
+<br/>
+<br/>
+1- Generar dentro de la base de datos (en la misma o un objeto nuevo) una variable llamada "fecha_nac" que contenga en un solo campo la fecha de nacimiento completa de cada nacido.
+
+--
+<br/>
+<br/>
+2- Generar además una variable llamada "fecha_ins" que contenga en un solo campo la fecha de inscripción completa de cada nacido.
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Mini-ejercicio 2: solución
+
+--
+
+Es posible crear ambas variables en un solo paso.
+
+
+```{r}
+nac2017 <- nac2017 %>% 
+  mutate(fecha_nac = make_date(ano_nac, mes_nac, dia_nac),
+         fecha_ins = make_date(ano_ins, mes_ins, dia_ins)) 
+```
+
+```{r}
+nac2017 %>% select(ano_nac, mes_nac, dia_nac, ano_ins, mes_ins,
+                   dia_ins, fecha_nac, fecha_ins) %>%
+  head() 
+```
+
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Manejo de fechas con `lubridate`
+
+--
+
+Así como podemos componer una fecha, también podemos descomponerla.
+
+--
+
+```{r}
+mi_cumple <- dmy("12-06-1985")
+year(mi_cumple)
+```
+
+--
+
+```{r}
+month(mi_cumple, label = T) # con label se pide la etiqueta
+```
+
+--
+
+```{r}
+mday(mi_cumple)
+```
+
+--
+
+```{r}
+wday(mi_cumple) # considera que el día 1 es el domingo
+```
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Operaciones aritméticas
+
+--
+
+Por ejemplo, pueden saber .pur[cuántos días de vida tienen]. 
+
+```{r}
+today() - ymd("1985-06-12") 
+```
+
+--
+
+Existe un **set de funciones** que sirven para operar sobre periodos de tiempo de una manera .pur[intuitiva y versatil]: se llaman `periods` y algunos da ellos son:
+
+```{r, eval=FALSE}
+days(1)
+weeks(1)
+months(1) # esta función es de R base
+years(1)
+```
+
+--
+
+¿Qué podemos hacer con ellos?
+
+```{r}
+# ¿que fecha es en un año y un mes más?
+today() + years(1) + months(1)
+```
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Operaciones aritméticas
+
+--
+
+Podemos, por ejemplo, crear una variable *deadline* que indique cuándo es un mes después de un punto inicial.
+
+```{r}
+inicio <- as.Date("2020-08-30")
+inicio + months(1)
+```
+
+--
+
+Pero no es una función tan robusta. .pur[¿Qué pasa con los meses de 31 días?]
+
+--
+
+```{r}
+inicio <- ymd("2020-08-31") # esta otra función es parecida a as.Date
+inicio + months(1)
+```
+
+--
+
+No sabe qué hacer y entrega un `NA`. Pero `lubridate()` contiene operadores .pur[robustos] para solucionarlo.
+
+--
+
+```{r}
+inicio %m+% months(1)
+```
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Operaciones aritméticas
+
+--
+
+`%m+%` también funciona con años y días. .medium-par[También existe `%m-%` para restar periodos].
+
+--
+
+```{r}
+bisiesto <- ymd("2020-02-29")
+bisiesto %m+% years(1)
+```
+
+--
+
+```{r}
+bisiesto %m+% days(1)
+```
+
+--
+
+Además se pueden generar automáticamente varios periodos. .pur[Esto puede ser muy útil para validar datos] 👀
+
+```{r}
+inicio <- ymd("2020-08-31")
+inicio %m+% months(1:6)
+```
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Operaciones aritméticas
+
+--
+
+Tambien podemos calcular **intervalos de tiempo** entre dos momentos de manera consistente.
+
+--
+
+Para eso utilizamos el operador .medium-par[`%--%`].
+
+--
+
+```{r}
+siguiente_año <- today() + years(1)
+(today() %--% siguiente_año) / days(1) # diferencia en días
+```
+
+--
+
+Para encontrar cuántos períodos caen dentro de un intervalo, con `%/%` pueden obtener la división entera:
+
+--
+
+```{r}
+(today() %--% siguiente_año) / weeks(1)
+
+```
+
+Ahora con `%/%`.
+
+```{r}
+(today() %--% siguiente_año) %/% weeks(1)
+```
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Mini-ejercicio 3
+
+--
+<br/>
+Vamos a utilizar la base de datos donde creamos "fecha_nac" y "fecha_ins".
+
+--
+
+La variable "fecha_nac" refiere a la .pur[fecha de nacimiento] de un nacido durante el año estadístico 2017 y "fecha_ins" indica la .pur[fecha en que el nacido fue inscrito].
+
+--
+
+1- Genera una variable llamada "dif_days" que indique la **diferencia en días** entre que los nacidos nacieron y fueron inscritos.
+
+--
+
+2- Genera una variable llamada "dif_weeks" que indique la **diferencia en semanas enteras** (sin decimales) entre que los nacidos nacieron y fueron inscritos.
+
+--
+
+3- Escoje una de las dos variables creadas y **genera una tabla de resumen** que contenga la mínima diferencia, la máxima, diferencia media y la mediana.
+
+--
+
+.center[.medium-par[Para resolver el punto 3 tendrán que googlear un poco 🕵️]]
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Mini-ejercicio 3
+
+
+1- Generar "dif_days".
+
+--
+
+```{r}
+nac2017 <- nac2017 %>% 
+  mutate(dif_days = (fecha_nac %--% fecha_ins) / days(1))
+```
+
+--
+
+2- Generar "dif_weeks".
+
+```{r}
+nac2017 <- nac2017 %>% 
+  mutate(dif_weeks = (fecha_nac %--% fecha_ins) %/% weeks(1))
+```
+
+3- Generación tabla de resumen de estadísticos.
+
+```{r}
+resumen_dif <- nac2017 %>% summarise(min_dif = min(dif_days),
+                                     max_dif = max(dif_days),
+                                     media_dif = mean(dif_days),
+                                     median_dif = median(dif_days))
+```
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Manejo de fechas con `lubridate`
+
+--
+
+El uso de `lubridate` puede generar **cierta dificultad** en un principio.
+
+--
+
+Esto debido a la cantidad de operadores nuevos que ofrece (%--%, %m+%, %m-%, etc.).
+
+--
+
+Pero si trabajamos habitualmente con fechas u horas, y son un aspecto importante de nuestro trabajo, vale mucho la pena estudiarlos bien.
+
+--
+
+Pues `lubridate` ofrece herramientas .medium-par-red[precisas] y .medium-par-red[robustas] para el trabajo con datos temporales.
+
+--
+
+.medium-par[Que además son absolutamente compatibles con las librerías de `tidyverse`].
+
+--
+
+Pueden encontrar muchísima más información [aquí](https://lubridate.tidyverse.org/).
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Tarea para la 🏠
+
+--
+
+En el archivo "nacimientos.rar" que se encuentra disponible en la carpeta **'data/tarea' en la sesion 3 de nuestro canal en Teams (Generación I)**, encontrarán las siguientes bases de datos:
+
+--
+
+- **nac2017_j1.xlsx**
+- **nac2017_j2.xlsx**
+- **nac2017_j3.xlsx**
+
+--
+
+Estas bases de datos .pur[fueron creadas a partir de la base de datos oficial de nacimientos del 2017].
+
+--
+
+1- En primer lugar, **cargue estos 3 objetos en su entorno y explórelos**. .pur[¿Qué son y cómo se relacionan estos objetos?]
+
+--
+
+2- Genera en **nac2017_j2** y **nac2017_j3** las variables "fecha_nac", "fecha_ins" y "dif_days", tal como lo hiciste en el ejercio anterior.
+
+--
+
+3- Ahora, une **nac2017_j1** con **nac2017_j2**, conservando todos los registros de **nac2017_j1** y solo las variables "fecha_nac", "fecha_ins" y "dif_days" de **nac2017_j2**, que acabas de crear.
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Tarea para la 🏠
+
+--
+
+4- .pur[¿Qué sucedió al unir **nac2017_j1** con **nac2017_j2**? ¿Se unieron todos los registros? Si no lo hicieron, ¿por qué pasó eso?]
+
+--
+
+5- Ahora .pur[ensambla] **nac2017_j2** y **nac2017_j3** y este nuevo objeto únelo con **nac2017_j1**, conservando solo "fecha_nac", "fecha_ins" y "dif_days" del objeto ensamblado.
+
+--
+
+6- .medium-par-red[¿Qué pasó ahora? 🙂]
+
+
+---
+
+background-image: url("imagenes/fondo2.PNG")
+background-size: contain;
+background-position: 100% 0%
+
+# Referencias
+
+.medium-par[Nada de esto sería posible sin:]
+
+- [R for Data Science, de Hadley Wickham](https://r4ds.had.co.nz/)
+
+- [Advanced R, de Hadley Wickham](http://adv-r.had.co.nz/Introduction.html)
+
+- [Data wrangling, exploration, and analysis with R, de Jenny Bryan](http://stat545.com/index.html)
+
+- [Introduction to R, de Data Carpentry](https://datacarpentry.org/R-genomics/01-intro-to-R.html#functions)
+
+- [Xaringan: Presentation Ninja, de Yihui Xie](https://github.com/yihui/xaringan). Para generar esta presentación con la plantilla ninja ⚔
+
+- [Tutorial de `lubridate`](https://lubridate.tidyverse.org/)
+
+.medium-par[R for Data Science tiene una traducción al español realizada por la comunidad hispana de R:]
+
+- [R para ciencia de datos, de Hadley Wickham](https://es.r4ds.hadley.nz/)
+
+---
+
+class: center, middle
+
+.linea-superior[]
+.linea-inferior[]
+
+
+<img src="imagenes/logo_portada2.png" width="200" />
+
+
+## Capacitación en R y herramientas de productividad
+
+## Proyecto Estratégico Servicios Compartidos para la Producción Estadística
+
+## Procesamiento de bases de datos (3)
+
+### Noviembre 2020

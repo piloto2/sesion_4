@@ -1,0 +1,123 @@
+---
+title: "Solución ejercicios - Sesión 3"
+subtitle: "Capacitación en R y herramientas de productividad"
+author: "PE Servicios Compartidos para la Producción Estadística"
+output: pdf_document
+header-includes:
+- \usepackage[fontsize=12pt]{scrextend}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
+```
+
+# Solución ejercicios - Sesión 3
+
+En primer lugar, deben descomprimir el archivo "nacimientos.rar" que se encuentra disponible en la carpeta 'data/tarea' en la sesion 3 de nuestro canal en Teams (Generación I). Encontrarán los siguientes archivos Excel:
+
+- **nac2017_j1.xlsx**
+- **nac2017_j2.xlsx**
+- **nac2017_j3.xlsx**
+
+Estas bases de datos **fueron creadas a partir de la base de datos oficial de nacimientos del 2017**, pero no contienen todos los registros, para evitar que tengan problemas con el ejercicio quienes no cuenten con una buena memoria RAM en sus computadores.
+
+### 1- En primer lugar, carguen estos 3 objetos en su entorno y explórelos. ¿Qué son y cómo se relacionan estos objetos?
+
+Debemos cargas las 3 bases de datos en nuestro entorno de trabajo. Dado que las bases están en formato Excel, debemos usar la librería `readxl`.
+Podemos setear una ruta con `setwd()` para ahorrar código y evitar errores al escribir las rutas.
+
+```{r, eval=F}
+setwd("C:/Users/Trabajo/PE SSCC/Capacitacion R/sesion_3/tarea")
+```
+
+```{r}
+library(readxl)
+
+nac2017_j1 <- read_excel("data/nac2017_j1.xlsx")
+nac2017_j2 <- read_excel("data/nac2017_j2.xlsx")
+nac2017_j3 <- read_excel("data/nac2017_j3.xlsx")
+
+```
+
+
+```{r, eval = F, include=F}
+nac2017_j1 <- read_excel("C:/Users/Trabajo/OneDrive - Instituto Nacional de Estadisticas/PE SSCC/Capacitacion R/sesion_3/data/tarea/data/nac2017_j1.xlsx")
+nac2017_j2 <- read_excel("C:/Users/Trabajo/OneDrive - Instituto Nacional de Estadisticas/PE SSCC/Capacitacion R/sesion_3/data/tarea/data/nac2017_j2.xlsx")
+nac2017_j3 <- read_excel("C:/Users/Trabajo/OneDrive - Instituto Nacional de Estadisticas/PE SSCC/Capacitacion R/sesion_3/data/tarea/data/nac2017_j3.xlsx")
+```
+
+Una forma sencilla de explorar los objetos es utilizar la función `glimpse()` de `tidyverse`. Si bien la primera intuición es abrir la base para verla como si fuera una hoja de cálculo, cuando se trata de bases voluminosas, esta acción puede tardar mucho tiempo o incluso hacer que tengamos que cerrar nuestra sesión de RStudio.
+
+```{r}
+library(tidyverse)
+
+glimpse(nac2017_j1)
+glimpse(nac2017_j2)
+glimpse(nac2017_j3)
+```
+
+Observamos que todos los objetos tienen distinta cantidad de filas, y que **nac2017_j1** tiene variables distintas, pero **nac2017_j2** y **nac2017_j3** sí tienen las mismas variables. Si somos perspicaces notaremos, además, que la suma de las filas de **nac2017_j2** y **nac2017_j3** es exactamente el número de filas de **nac2017_j1**. Las tres bases de datos comparten una variable: "id".
+
+En relación al contenido, notamos que **nac2017_j1** contiene variables como "nacion", "sexo", "peso" y "talla", mientras que las otras dos bases de datos, además del "id", solo contienen varibles que permiten construir la fecha de nacimiento e inscripción de los nacidos.
+
+### 2- Genera en **nac2017_j2** y **nac2017_j3** las variables "fecha_nac", "fecha_ins" y "dif_days", tal como lo hiciste en el ejercio durante la clase.
+
+Podemos crear las 3 variables de una vez utilizando *pipes*, en cada una de las bases de datos por separado. Esto es posible aún cuando "dif_days" requiere de "fecha_ins" y "fecha_nac" para su creación, porque **R** evalúa la sentencia de izquierda a derecha, tal como leemos en el idioma español.    
+
+```{r}
+library(lubridate)
+nac2017_j2 <- nac2017_j2 %>% 
+  mutate(fecha_nac = make_date(ano_nac, mes_nac, dia_nac),
+         fecha_ins = make_date(ano_ins, mes_ins, dia_ins),
+         dif_days = (fecha_nac %--% fecha_ins) / days(1))
+
+nac2017_j3 <- nac2017_j3 %>% 
+  mutate(fecha_nac = make_date(ano_nac, mes_nac, dia_nac),
+         fecha_ins = make_date(ano_ins, mes_ins, dia_ins),
+         dif_days = (fecha_nac %--% fecha_ins) / days(1))
+
+```
+
+### 3- Ahora, une **nac2017_j1** con **nac2017_j2**, conservando todos los registros de **nac2017_j1** y solo las variables "fecha_nac", "fecha_ins" y "dif_days" de **nac2017_j2**, que acabas de crear.
+
+La forma de traer variables de una base a otra, manteniendo todas las observaciones de la primera base es utilizando `left_join()`.
+
+Crearemos otro objeto con las bases de datos unidas. Es posible hacerlo de esta manera:
+
+```{r, eval = F}
+nac2017_j4 <- nac2017_j1 %>% left_join(nac2017_j2[,c(1,8,9,10)], by = "id")
+```
+
+Pero también puede utilizarse la función `select()` para escoger las variables que queremos conservar. Recuerden que siempre hay que conservar la llave, sino las bases no se unirán, y el *software* arrojará un error. 
+
+```{r}
+nac2017_j4 <- nac2017_j1 %>% 
+  left_join(nac2017_j2 %>%
+              select(id, fecha_nac, fecha_ins, dif_days), by = "id")
+```
+
+### 4- ¿Qué sucedió al unir nac2017_j1 con nac2017_j2? ¿Se unieron todos los registros? Si no lo hicieron, ¿por qué pasó eso?
+
+Podrán notar que solo se unieron los registros de la base **nac2017_j2** que estaban presentes (a través de su "id") en la base **nac2017_j1**. En los casos donde no hubo *match*, los registros de la base **nac2017_j1** se mantuvieron, pero sin información de las variables "fecha_nac", "fecha_ins" y "dif_days".
+
+### 5- Ahora ensambla **nac2017_j2** y **nac2017_j3** y este nuevo objeto únelo con **nac2017_j1**, conservando solo "fecha_nac", "fecha_ins" y "dif_days" del objeto ensamblado.
+
+Utilizamos `bind_rows()` para ensamblar las dos bases de datos. Como saben, deben conserva la llave ("id") junto con las otras variables si luego quieren hacer un `join()` para unir los objetos.
+
+```{r}
+nac2017_j5 <- nac2017_j2 %>% bind_rows(nac2017_j3) %>% 
+  select(id, fecha_nac, fecha_ins, dif_days)
+
+con_left <- nac2017_j1 %>% left_join(nac2017_j5, by = "id")
+con_inner <- nac2017_j1 %>% inner_join(nac2017_j5, by = "id")
+```
+
+### 6- ¿Qué pasó ahora?
+
+Al ensamblar **nac2017_j2** y **nac2017_j3**, ahora pega perfectamente el objeto ensamblado con **nac2017_j1**. Entonces, se unirán todos los registros, sin valores `NA`. Y no importa si uso `left_join()` o `inner_join()`.
+
+```{r}
+dim(con_left)
+dim(con_inner)
+```
+
