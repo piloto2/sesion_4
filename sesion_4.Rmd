@@ -204,14 +204,14 @@ Como .pur[intuición básica], los joins .medium-par-red[combinan] dos data fram
 
 --
 
-Si bien existen **6 tipos de joins básicos**, nos concentraremos acá los **2 que más se utilizan**.
+Si bien existen **6 tipos de joins básicos**, nos concentraremos acá en los **2 que más se utilizan**.
 
 --
 
 - `left_join()`
 - `inner_join()`
 
-Que son 3 de los 4 joins denominados como .pur[*mutating*] joins.
+Que son 2 de los 4 joins denominados como .pur[*mutating*] joins.
 
 --
 
