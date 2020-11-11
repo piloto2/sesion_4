@@ -198,6 +198,8 @@ Si bien existen **6 tipos de joins básicos**, nos concentraremos acá en los **
 - `left_join()`
 - `inner_join()`
 
+--
+
 Que son 2 de los 4 joins denominados como .pur[*mutating*] joins.
 
 --
@@ -939,7 +941,7 @@ Sys.time() # el momento exacto, con fecha, horas, minutos y segundos
 ```
 
 ```
-## [1] "2020-11-11 01:36:22 -03"
+## [1] "2020-11-11 09:42:38 -03"
 ```
 
 ---
@@ -971,7 +973,7 @@ now()
 ```
 
 ```
-## [1] "2020-11-11 01:36:22 -03"
+## [1] "2020-11-11 09:42:39 -03"
 ```
 
 --
@@ -1103,7 +1105,7 @@ library(lubridate)
 
 nac2017 &lt;- read_excel("data/nac_2017.xlsx")
 
-# seleccionamos día, mes, año de nacimiento y creaoms una fecha
+# seleccionamos día, mes, año de nacimiento y creamos una fecha
 nac2017 %&gt;% 
   select(dia_nac, mes_nac, ano_nac) %&gt;% 
   mutate(fecha_nac = make_date(ano_nac, mes_nac, dia_nac)) %&gt;% 
@@ -1563,7 +1565,7 @@ background-position: 100% 0%
 
 --
 
-En el archivo "nacimientos.rar" que se encuentra disponible en la carpeta **'data/tarea' en la sesion 3 de nuestro canal en Teams (Generación I)**, encontrarán las siguientes bases de datos:
+En el archivo "nacimientos.rar" que se encuentra disponible en la carpeta **'data/tarea' en la sesion 4 de nuestro canal en Teams (Generación II)**, encontrarán las siguientes bases de datos:
 
 --
 
@@ -1577,7 +1579,7 @@ Estas bases de datos .pur[fueron creadas a partir de la base de datos oficial de
 
 --
 
-1- En primer lugar, **cargue estos 3 objetos en su entorno y explórelos**. .pur[¿Qué son y cómo se relacionan estos objetos?]
+1- En primer lugar, **carga estos 3 objetos en su entorno y explórelos**. .pur[¿Qué son y cómo se relacionan estos objetos?]
 
 --
 
